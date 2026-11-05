@@ -7,6 +7,13 @@ Video giới thiệu và demo (4 phút, không có tiếng):
 
 https://github.com/user-attachments/assets/93d61af4-3ca5-41f0-8527-404dec7fe602
 
+English demo video (4 min, no audio):
+
+
+
+https://github.com/user-attachments/assets/5338b6d7-d35c-49bf-bd61-58b2bc6262bc
+
+
 
 ## Thành phần
 
