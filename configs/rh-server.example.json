@@ -1,0 +1,89 @@
+{
+  "data_dir": "data",
+  "listen": "127.0.0.1:8470",
+  "public_url": "http://rh.example.local:8470",
+  "ingest_token_env": "RH_INGEST_TOKEN",
+  "ui_user": "",
+  "ui_password_env": "",
+  "log_level": "info",
+
+  "detect": {
+    "window": "60s",
+    "min_renames": 50,
+    "min_dirs": 10,
+    "note_min_dirs": 10,
+    "incident_quiet": "10m",
+    "update_interval": "2m",
+    "extra_known_exts": [],
+    "benign_from_exts": [],
+    "benign_to_exts": []
+  },
+
+  "scanners": [
+    {
+      "system": "nas01",
+      "share": "\\\\nas01\\Finance",
+      "root": "\\\\nas01\\Finance",
+      "interval": "60s",
+      "hot_interval": "10s",
+      "hot_window": "10m",
+      "workers": 16,
+      "ops_per_sec": 2000
+    }
+  ],
+
+  "usn": [
+    {
+      "volume": "D:",
+      "system": "fs01",
+      "roots": [ { "path": "Shares/KeToan", "share": "\\\\fs01\\KeToan" } ],
+      "state_file": "data/usn-D.json",
+      "poll_interval": "500ms"
+    }
+  ],
+
+  "canaries": [
+    {
+      "system": "nas01",
+      "share": "\\\\nas01\\Finance",
+      "root": "\\\\nas01\\Finance",
+      "interval": "5s",
+      "paths": [ "!000_Do_Not_Delete.docx", "000_Budget_Plan.xlsx", "!001_Contract.pdf" ]
+    }
+  ],
+
+  "syslog": {
+    "listen_udp": ":514",
+    "listen_tcp": ":514",
+    "capture_file": "data/syslog-unmatched.log",
+    "capture_max": 1000,
+    "devices": [
+      { "address": "10.0.0.21", "system": "syno01", "format": "synology", "share_prefix": "\\\\syno01\\" },
+      { "address": "10.0.0.22", "system": "qnap01", "format": "qnap", "share_prefix": "\\\\qnap01\\",
+        "strip_prefix": "^/share/(CACHEDEV[0-9]+_DATA|MD0_DATA|HDA_DATA)/" }
+    ],
+    "custom_formats": [
+      {
+        "name": "samba-full-audit",
+        "regex": "\\|(?P<user>[^|]*)\\|(?P<ip>[^|]*)\\|[^|]*\\|(?P<op>renameat|unlinkat)\\|ok\\|(?P<old>[^|]*)\\|?(?P<new>[^|]*)$",
+        "ops": { "renameat": "RENAME", "unlinkat": "DELETE" }
+      }
+    ]
+  },
+
+  "notify": {
+    "console": true,
+    "email": {
+      "host": "smtp.example.local",
+      "port": 587,
+      "tls": "starttls",
+      "username": "rh-alert@example.local",
+      "password_env": "RH_SMTP_PASSWORD",
+      "from": "rh-alert@example.local",
+      "to": [ "soc@example.local" ]
+    },
+    "telegram": { "token_env": "RH_TELEGRAM_TOKEN", "chat_id": "-1001234567890" },
+    "syslog": { "network": "udp", "address": "siem.example.local:514" },
+    "webhook": { "url": "https://soar.example.local/hooks/ransomware", "auth_header_env": "RH_WEBHOOK_AUTH" }
+  }
+}

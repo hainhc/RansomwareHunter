@@ -1,0 +1,17 @@
+{
+  "server_url": "http://rh.example.local:8470",
+  "ingest_token_env": "RH_INGEST_TOKEN",
+  "log_level": "info",
+  "usn": [
+    {
+      "volume": "D:",
+      "system": "fs01",
+      "roots": [
+        { "path": "Shares/KeToan", "share": "\\\\fs01\\KeToan" },
+        { "path": "Shares/NhanSu", "share": "\\\\fs01\\NhanSu" }
+      ],
+      "state_file": "C:\\ProgramData\\RansomwareHunter\\usn-D.json",
+      "poll_interval": "500ms"
+    }
+  ]
+}

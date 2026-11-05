@@ -1,0 +1,5 @@
+/bin/
+/data/
+*.exe
+configs/rh-server.json
+configs/rh-agent.json
