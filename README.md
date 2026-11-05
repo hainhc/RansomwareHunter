@@ -2,7 +2,7 @@
 
 Phát hiện ransomware trên SAN/NAS bằng **metadata** (tên file, thư mục, kích thước, thời gian, file ID). Không đọc nội dung file.
 Thiết kế đầy đủ: [docs/DESIGN.md](docs/DESIGN.md). Phạm vi PoC: §12.
-Video giới thiệu và demo (4 phút, không có tiếng): [docs/RansomwareHunter-demo.mp4](docs/RansomwareHunter-demo.mp4).
+Video giới thiệu và demo (4 phút, không có tiếng):
 
 
 https://github.com/user-attachments/assets/93d61af4-3ca5-41f0-8527-404dec7fe602
