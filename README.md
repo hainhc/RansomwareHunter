@@ -1,19 +1,51 @@
-# RansomwareHunter — PoC giai đoạn 0
+# RansomwareHunter
 
-Phát hiện ransomware trên SAN/NAS bằng **metadata** (tên file, thư mục, kích thước, thời gian, file ID). Không đọc nội dung file.
-Thiết kế đầy đủ: [docs/DESIGN.md](docs/DESIGN.md). Phạm vi PoC: §12.
-Video giới thiệu và demo (4 phút, không có tiếng):
+**Cảnh báo ngay khi file trên SAN/NAS bắt đầu bị mã hóa**, để kịp ngắt kết nối trước khi phần lớn dữ liệu bị mã hóa.
 
+> Trạng thái: PoC giai đoạn 0. Phát hiện và cảnh báo đã chạy được. Phản ứng tự động (ngắt kết nối) còn trong lộ trình, xem [Ứng dụng](#ứng-dụng-cảnh-báo-để-ngắt-sớm).
+
+## Mục đích
+
+Ransomware thường mã hóa file share từ **một máy trạm hoặc một tài khoản** bị chiếm, qua SMB/NFS, với tốc độ hàng trăm file mỗi giây. Thiệt hại tỉ lệ với thời gian từ lúc bắt đầu mã hóa tới lúc bị chặn: chậm một phút có thể là thêm hàng chục nghìn file.
+
+RansomwareHunter theo dõi kho lưu trữ liên tục và báo động khi thấy **dấu hiệu mã hóa**:
+
+- nhiều file bị đổi đuôi trong thời gian ngắn, cùng hội tụ về một đuôi lạ (`.docx → .docx.lockbit`);
+- cùng một file "ransom note" xuất hiện ở nhiều thư mục;
+- file mồi (canary) đặt sẵn trên share bị đổi tên hoặc xóa.
+
+Cảnh báo nêu rõ **file nào bị đổi đuôi, đổi thành đuôi gì, ở thư mục nào, do tài khoản và máy trạm nào** (khi nguồn sự kiện có thông tin này), kèm danh sách đầy đủ để khôi phục từ snapshot/backup.
+
+Chỉ dùng **metadata** (tên file, thư mục, kích thước, thời gian, file ID) và không bao giờ đọc nội dung file, nên chịu được kho hàng trăm triệu file mà không làm chậm hệ thống lưu trữ.
+
+## Ứng dụng: cảnh báo để ngắt sớm
+
+| Cách dùng | Hoạt động | Trạng thái |
+|---|---|---|
+| **Gọi quản trị viên** | Cảnh báo HIGH/CRITICAL gửi ngay qua Email, Telegram, Syslog CEF (SIEM/SOC), Webhook, kèm khuyến nghị: ngắt phiên SMB / khóa tài khoản của tác nhân, cô lập máy trạm nguồn, giữ snapshot. Người trực ngắt kết nối NAS hoặc máy trạm trước khi lan rộng. | Đã có |
+| **Tự động hóa qua Webhook** | Webhook gửi incident dạng JSON (tài khoản, IP, share, mức độ) tới SOAR / firewall / NAC / EDR của tổ chức để tự chặn IP hoặc khóa tài khoản theo quy tắc của bên đó. | Đã có webhook; quy tắc chặn do hệ thống nhận tự cấu hình |
+| **Phản ứng một chạm có phê duyệt** | Cảnh báo kèm kế hoạch phản ứng; người trực bấm duyệt, `rh-responder` thực thi: đóng phiên SMB, chặn user/client trên share, khóa tài khoản AD, chụp snapshot. Có nhật ký và nút hoàn tác. | Lộ trình MVP ([DESIGN §6](docs/DESIGN.md)) |
+| **Tự động ngắt** | Với tín hiệu chắc chắn (vd. file mồi bị động vào, hoặc CRITICAL từ nguồn có user/IP), tự đóng phiên SMB / chặn tài khoản không cần chờ người duyệt, trong giới hạn an toàn (danh sách tài khoản bảo vệ, chỉ hành động đảo ngược được). | Đề xuất, chưa thiết kế chi tiết |
+
+Ví dụ trong lần chạy demo (100 file/giây): nguồn syslog Synology báo CRITICAL sau **0,5 giây** (khoảng 50 file) và chỉ đúng `CORP\user01` từ máy `10.10.5.23`; file mồi báo sau **0,7 giây**; nguồn quét metadata báo sau **8,2 giây**.
+
+## Video
+
+Giới thiệu và demo (4 phút, không có tiếng):
 
 https://github.com/user-attachments/assets/93d61af4-3ca5-41f0-8527-404dec7fe602
 
 English demo video (4 min, no audio):
 
-
-
 https://github.com/user-attachments/assets/5338b6d7-d35c-49bf-bd61-58b2bc6262bc
 
+## English summary
 
+RansomwareHunter **alerts the moment files on a SAN/NAS start getting encrypted**, so administrators can cut off the infected workstation or account before most of the data is lost. It watches file metadata only (never file contents): mass extension changes converging on an unknown extension, ransom notes appearing across folders, and canary files being touched. Alerts name the affected files, the new extension, and — where the source provides it — the account and client IP. Today it alerts via email, Telegram, syslog CEF and webhook (which can drive a SOAR/firewall to block automatically); approval-gated one-click response and policy-based automatic cut-off are on the roadmap.
+
+## Tài liệu
+
+Thiết kế đầy đủ: [docs/DESIGN.md](docs/DESIGN.md). Phạm vi PoC: §12.
 
 ## Thành phần
 
